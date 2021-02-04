@@ -11,8 +11,6 @@ app.config['JSON_AS_ASCII'] = False
 CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app, version='1.0', title='알바꼼꼼 REST API', description='알바꼼꼼 백엔드 REST API 입니다!')
 
-ns_login = api.namespace('/', description='로그인')
-
 
 @app.route('/')
 def main():
@@ -21,4 +19,5 @@ def main():
 api.add_namespace(Login, '/login')                  # 로그인
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
