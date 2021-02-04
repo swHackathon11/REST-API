@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restplus import Api
 from flask_cors import CORS
 from Api.login import Login
+from Api.register import Register
 import os
 
 app = Flask(__name__)
@@ -16,7 +17,12 @@ api = Api(app, version='1.0', title='알바꼼꼼 REST API', description='알바
 def main():
     return 'Hello, World!'
 
-api.add_namespace(Login, '/login')                  # 로그인
+
+# 로그인
+api.add_namespace(Login, '/login')
+# 회원가입
+api.add_namespace(Register, '/register')
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

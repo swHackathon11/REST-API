@@ -1,5 +1,5 @@
 import json
-from flask_restplus import Namespace, fields, Resource, reqparse
+from flask_restplus import Namespace, fields, Resource
 
 Login = Namespace('login', description='로그인')
 
