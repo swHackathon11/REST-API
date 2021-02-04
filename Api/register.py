@@ -2,7 +2,7 @@ import json
 
 import pymysql
 from flask_restplus import Namespace, fields, Resource, reqparse
-from flask import request
+from settings import DATABASES
 
 Register = Namespace('register', description='회원가입')
 
@@ -40,7 +40,11 @@ class PostRegister(Resource):
         __userName = __args['user_name']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user='root', passwd='gmldn2230#', host='127.0.0.1', db='alba_db', charset='utf8')
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         sql = 'insert into ' + __userType + ' values ("' + __userID + '", "' + __userPW + '", "' + __userName + '");'
@@ -66,7 +70,11 @@ class PostRegister(Resource):
         __userID = __args['user_id']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user='root', passwd='gmldn2230#', host='127.0.0.1', db='alba_db', charset='utf8')
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 

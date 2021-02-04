@@ -2,6 +2,8 @@ import jwt
 import pymysql
 from flask import request
 from flask_restplus import Namespace, fields, Resource, reqparse
+from settings import DATABASES
+
 
 Workspace = Namespace('workspace', description='매장')
 
@@ -64,7 +66,11 @@ class PostRegister(Resource):
         __employee_id = __args['employee_id']
         __payday = __args['payday']
         __capacity = __args['capacity']
-        alba_db = pymysql.connect(user='root', passwd='gmldn2230#', host='127.0.0.1', db='alba_db', charset='utf8')
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         max_id_query = 'select max(id) as max From workplace;'
@@ -112,7 +118,11 @@ class PostRegister(Resource):
         __userName = __args['user_name']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user='root', passwd='gmldn2230#', host='127.0.0.1', db='alba_db', charset='utf8')
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         sql = 'insert into ' + __userType + ' values ("' + __userID + '", "' + __userPW + '", "' + __userName + '");'

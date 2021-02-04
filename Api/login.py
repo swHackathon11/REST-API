@@ -1,7 +1,7 @@
-import json
 from flask_restplus import Namespace, fields, Resource, reqparse
 import pymysql
 import jwt
+from settings import DATABASES
 
 Login = Namespace('login', description='로그인')
 
@@ -30,7 +30,11 @@ class PostLogin(Resource):
         __userPW = __args['user_password']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user='root', passwd='gmldn2230#', host='127.0.0.1', db='alba_db', charset='utf8')
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select pwd from {user_type} where id = "{user_id}"'
