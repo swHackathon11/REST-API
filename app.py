@@ -17,7 +17,6 @@ api = Api(app, version='1.0', title='알바꼼꼼 REST API', description='알바
 def main():
     return 'Hello, World!'
 
-
 # 회원가입
 api.add_namespace(Register, '/register')
 # 로그인
