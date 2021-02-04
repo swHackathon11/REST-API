@@ -1,7 +1,7 @@
 import json
 from flask_restplus import Namespace, fields, Resource
 
-Register = Namespace('login', description='로그인')
+Register = Namespace('register', description='회원가입')
 
 model_register = Register.model('Register Data', {
     'user_id': fields.String(description='ID', required=True),

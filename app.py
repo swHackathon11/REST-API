@@ -18,10 +18,11 @@ def main():
     return 'Hello, World!'
 
 
-# 로그인
-api.add_namespace(Login, '/login')
 # 회원가입
 api.add_namespace(Register, '/register')
+# 로그인
+api.add_namespace(Login, '/login')
+
 
 
 if __name__ == '__main__':
