@@ -1,7 +1,7 @@
 from flask_restplus import Namespace, fields, Resource, reqparse
 import pymysql
 import jwt
-from settings import DATABASES
+from settings import DATABASES, JWT
 
 Login = Namespace('login', description='로그인')
 
@@ -48,7 +48,7 @@ class PostLogin(Resource):
                       'user_type': __userType
                       }
 
-        token = jwt.encode(login_json, "secret_key", algorithm="HS256")
+        token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
         if __result[0]['pwd'] == __userPW:
             return {'result': 'Success',

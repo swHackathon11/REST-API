@@ -3,7 +3,8 @@ from flask_restplus import Api
 from flask_cors import CORS
 from Api.login import Login
 from Api.register import Register
-from Api.workplace import Workspace
+from Api.workplace import Workplace
+from Api.calendar import Calendar
 import os
 
 app = Flask(__name__)
@@ -19,9 +20,10 @@ api.add_namespace(Register, '/register')
 # 로그인
 api.add_namespace(Login, '/login')
 # 매장
-api.add_namespace(Workspace, '/workspace')
+api.add_namespace(Workplace, '/workspace')
 
-
+# 캘린더
+api.add_namespace(Calendar, '/calendar')
 
 
 
