@@ -3,6 +3,7 @@ from flask_restplus import Api
 from flask_cors import CORS
 from Api.login import Login
 from Api.register import Register
+from Api.workplace import Workspace
 import os
 
 app = Flask(__name__)
@@ -13,14 +14,14 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app, version='1.0', title='알바꼼꼼 REST API', description='알바꼼꼼 백엔드 REST API 입니다!')
 
 
-@app.route('/')
-def main():
-    return 'Hello, World!'
-
 # 회원가입
 api.add_namespace(Register, '/register')
 # 로그인
 api.add_namespace(Login, '/login')
+# 매장
+api.add_namespace(Workspace, '/workspace')
+
+
 
 
 
