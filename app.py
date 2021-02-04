@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restplus import Api
 from flask_cors import CORS
 from Api.login import Login
+import os
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -20,4 +21,4 @@ def main():
 api.add_namespace(Login, '/login')                  # 로그인
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
