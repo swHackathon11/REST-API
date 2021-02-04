@@ -43,17 +43,24 @@ class PostLogin(Resource):
 
         __result = cursor.fetchall()
 
-        login_json = {'id': __userID,
-                      'pw': __userPW,
-                      'user_type': __userType
-                      }
+        print(__result)
 
-        token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
+        if __result:
+            login_json = {'id': __userID,
+                          'pw': __userPW,
+                          'user_type': __userType
+                          }
 
-        if __result[0]['pwd'] == __userPW:
-            return {'result': 'Success',
-                    'token': token
-                    }
+            token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
+            if __result[0]['pwd'] == __userPW:
+                return {'result': 'Success',
+                        'token': token
+                        }
+
+            else:
+                return {'result': 'Fail',
+                        'error': 'PW mismatch'}
         else:
-            return {'result': 'Fail'}
+            return {'result': 'Fail',
+                    'error': 'ID does not exist'}
