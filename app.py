@@ -20,7 +20,7 @@ api.add_namespace(Register, '/register')
 # 로그인
 api.add_namespace(Login, '/login')
 # 매장
-api.add_namespace(Workplace, '/workspace')
+api.add_namespace(Workplace, '/workplace')
 
 # 캘린더
 api.add_namespace(Calendar, '/calendar')
