@@ -109,6 +109,9 @@ class AddSubstitute(Resource):
         __token = __args['token']
         __workplace_schedule_id = __args['workplace_schedule_id']
 
+
+
+
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
         except:
@@ -124,6 +127,13 @@ class AddSubstitute(Resource):
             return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+        # ID 체크
+        query = 'select employee_id From workplace_schedule where id ={workplace_schedule_id};'
+        cursor.execute(query.format(workplace_schedule_id=__workplace_schedule_id))
+        result = cursor.fetchall()
+        if result[0]['employee_id'] != __auth['id']:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
+
 
         max_id_query = 'select max(id) as max From sub_wanted;'
         cursor.execute(max_id_query)
