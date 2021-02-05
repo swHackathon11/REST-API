@@ -6,6 +6,7 @@ from Api.register import Register
 from Api.workplace import Workplace
 from Api.calendar import Calendar
 from Api.substitute import Substitute
+from Api.pay import Pay
 import os
 
 app = Flask(__name__)
@@ -26,7 +27,8 @@ api.add_namespace(Workplace, '/workplace')
 api.add_namespace(Calendar, '/calendar')
 # 캘린더
 api.add_namespace(Substitute, '/substitute')
-
+# 캘린더
+api.add_namespace(Pay, '/pay')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -73,10 +73,18 @@ class postCalendar(Resource):
                                   charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+
+        query = 'select EXISTS (select * from workplace_schedule where workplace_id="{workplace_id}") as suceess;'
+        cursor.execute(query.format(workplace_id=workplace_id))
+        result = cursor.fetchall()
+
+        print(result)
+
+
         if __day is None:
             query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
                     'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
-                    'where workplace_id="1" and YEAR(date) = {year} and Month(date) = {month};'
+                    'where workplace_id="{workplace_id}" and YEAR(date) = {year} and Month(date) = {month};'
 
             cursor.execute(query.format(workplace_id=workplace_id,
                                         year=__year,
@@ -84,7 +92,7 @@ class postCalendar(Resource):
         else:
             query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
                     'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
-                    'where workplace_id="1" and YEAR(date) = {year} and Day(date) = {day};'
+                    'where workplace_id="{workplace_id}" and YEAR(date) = {year} and Day(date) = {day};'
 
             cursor.execute(query.format(workplace_id=workplace_id,
                                         year=__year,

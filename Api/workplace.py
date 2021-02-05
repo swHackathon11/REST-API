@@ -416,8 +416,8 @@ class Attendance(Resource):
                                             day=__day
                                             ))
                 alba_db.commit()
-
                 return {'result': 'Success'}
+
             except:
                 return {'result': 'Fail', "error": "Auth Failed"}, 401
 
