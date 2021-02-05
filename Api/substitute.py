@@ -19,7 +19,7 @@ model_substitute = Substitute.model('Substitute Data', {
 # 대타 추가
 model_add_substitute = Substitute.model('Substitute Add Data', {
     'token': fields.String(description='Token', required=True),
-    'workplace_schedule_id': fields.String(description='Year', required=True),
+    'workplace_schedule_id': fields.Integer(description='Year', required=True),
 })
 
 # 대타로 변경
@@ -103,7 +103,7 @@ class AddSubstitute(Resource):
         '''대타 등록'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
-        __parser.add_argument('workplace_schedule_id', type=str)
+        __parser.add_argument('workplace_schedule_id', type=int)
 
         __args = __parser.parse_args()
         __token = __args['token']
