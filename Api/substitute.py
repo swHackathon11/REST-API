@@ -9,7 +9,6 @@ from settings import DATABASES, JWT
 
 Substitute = Namespace('substitute', description='대타')
 
-
 model_substitute = Substitute.model('Substitute Data', {
     'token': fields.String(description='Token', required=True),
     'year': fields.Integer(description='Year', required=True),
@@ -17,8 +16,12 @@ model_substitute = Substitute.model('Substitute Data', {
     'day': fields.Integer(description='Day', required=False),
 })
 
-
 model_add_substitute = Substitute.model('Substitute Add Data', {
+    'token': fields.String(description='Token', required=True),
+    'workplace_schedule_id': fields.String(description='Year', required=True),
+})
+
+model_change_substitute = Substitute.model('Substitute Change Data', {
     'token': fields.String(description='Token', required=True),
     'workplace_schedule_id': fields.String(description='Year', required=True),
 })
@@ -82,7 +85,6 @@ class GetSubstitute(Resource):
         return {'result': 'Success', 'data': __result}
 
 
-
 @Substitute.route('/<workplace_id>/add')
 class AddSubstitute(Resource):
 
@@ -92,6 +94,54 @@ class AddSubstitute(Resource):
     @Substitute.response(401, 'Unauthorized')
     @Substitute.response(500, 'Internal Server Error')
     def post(self, workplace_id):
+        __parser = reqparse.RequestParser()
+        __parser.add_argument('token', type=str)
+        __parser.add_argument('workplace_schedule_id', type=str)
+
+        __args = __parser.parse_args()
+        __token = __args['token']
+        __workplace_schedule_id = __args['workplace_schedule_id']
+
+        try:
+            __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+        except:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
+
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
+
+        cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+
+        max_id_query = 'select max(id) as max From sub_wanted;'
+        cursor.execute(max_id_query)
+        result = cursor.fetchall()
+        try:
+            __id = int(result[0]['max']) + 1
+        except:
+            __id = 1
+
+        query = 'insert into sub_wanted values({id},{workplace_id}, "{employer_id}",{workplace_schedule_id}, 0);'
+        cursor.execute(query.format(id=__id,
+                                    workplace_id=workplace_id,
+                                    employer_id=__auth['id'],
+                                    workplace_schedule_id=__workplace_schedule_id
+                                    ))
+        alba_db.commit()
+        return {'result': 'success'}
+
+
+@Substitute.route('/<workplace_id>/change')
+class ChangeSubstitute(Resource):
+
+    @Substitute.expect(model_change_substitute)
+    @Substitute.response(200, 'OK')
+    @Substitute.response(400, 'Bad Request')
+    @Substitute.response(401, 'Unauthorized')
+    @Substitute.response(500, 'Internal Server Error')
+    def patch(self, workplace_id):
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('workplace_schedule_id', type=str)

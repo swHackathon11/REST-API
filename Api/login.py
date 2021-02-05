@@ -30,6 +30,10 @@ class PostLogin(Resource):
         __userPW = __args['user_password']
         __userType = __args['user_type']
 
+        if __userType != 'employee' and __userType != 'employer':
+            return {'result': 'Fail',
+                    'error': 'User Type is Incorrect'}
+
         alba_db = pymysql.connect(user=DATABASES['user'],
                                   passwd=DATABASES['passwd'],
                                   host=DATABASES['db_host'],
@@ -51,18 +55,28 @@ class PostLogin(Resource):
             token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
             if __result[0]['pwd'] == __userPW:
+                if __userType == 'employer':
+                    query = 'select ww.workplace_id as id ' \
+                            'from employer as e right outer join workplace_workers AS ww ON e.id = ww.employer_id ' \
+                            'where e.id = "{employer_id}";'
 
-                query = 'select ww.workplace_id ' \
-                        'from employer as e right outer join workplace_workers AS ww ON e.id = ww.employer_id ' \
-                        'where e.id = "{employer_id}";'
+                    cursor.execute(query.format(employer_id=__userID))
+                    __result = cursor.fetchall()
+                    __data = [r["id"] for r in __result]
 
-                cursor.execute(query.format(employer_id=__userID))
-                __result = cursor.fetchall()
-                print(__result)
+
+                elif __userType == 'employee':
+                    query = 'select w.id from employee as e right outer join workplace AS w ON e.id = w.employee_id where e.id = "{employee_id}";'
+                    cursor.execute(query.format(employee_id=__userID))
+                    __result = cursor.fetchall()
+                    __data = [r["id"] for r in __result]
+                    print(__data)
+
+
 
                 return {'result': 'Success',
                         'token': token,
-                        'data': __result
+                        'workplace_id': __data
                         }
 
             else:
