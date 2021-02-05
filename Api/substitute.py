@@ -213,3 +213,5 @@ class ChangeSubstitute(Resource):
                                         ))
             alba_db.commit()
             return {'result': 'Success'}
+        else:
+            return {'result': 'Fail', "error": "Wrong data"}
