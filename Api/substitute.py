@@ -60,12 +60,12 @@ class GetSubstitute(Resource):
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
-        query = 'select sw.id, sw.workplace_id, e.name, sw.employer_id, ws.date, ws.start_time, ws.end_time, sw.is_checked ' \
+        query = 'select sw.id, sw.workplace_id, e.name, sw.employee_id, ws.date, ws.start_time, ws.end_time, sw.is_checked ' \
                 'from sub_wanted as sw ' \
                 'right outer join workplace_schedule as ws ' \
                 'ON sw.workplace_schedule_id = ws.id ' \
-                'right outer join employer as e ' \
-                'ON sw.employer_id = e.id ' \
+                'right outer join employee as e ' \
+                'ON sw.employee_id = e.id ' \
                 'where sw.workplace_id = "{workplace_id}" ' \
                 'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
 
@@ -173,10 +173,10 @@ class ChangeSubstitute(Resource):
         except:
             __id = 1
 
-        query = 'insert into sub_wanted values({id},{workplace_id}, "{employer_id}",{workplace_schedule_id}, 0);'
+        query = 'insert into sub_wanted values({id},{workplace_id}, "{employee_id}",{workplace_schedule_id}, 0);'
         cursor.execute(query.format(id=__id,
                                     workplace_id=workplace_id,
-                                    employer_id=__auth['id'],
+                                    employee_id=__auth['id'],
                                     workplace_schedule_id=__workplace_schedule_id
                                     ))
         alba_db.commit()
