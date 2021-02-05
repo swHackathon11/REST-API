@@ -25,7 +25,7 @@ model_add_substitute = Substitute.model('Substitute Add Data', {
 # 대타로 변경
 model_change_substitute = Substitute.model('Substitute Change Data', {
     'token': fields.String(description='Token', required=True),
-    'sub_wanted_id': fields.String(description='Year', required=True),
+    'sub_wanted_id': fields.Integer(description='Year', required=True),
 })
 
 
@@ -161,7 +161,7 @@ class ChangeSubstitute(Resource):
         '''대타로 변경'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
-        __parser.add_argument('sub_wanted_id', type=str)
+        __parser.add_argument('sub_wanted_id', type=int)
 
         __args = __parser.parse_args()
         __token = __args['token']
