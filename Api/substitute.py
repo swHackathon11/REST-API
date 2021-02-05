@@ -73,7 +73,7 @@ class GetSubstitute(Resource):
                 'right outer join employee as e ' \
                 'ON sw.employee_id = e.id ' \
                 'where sw.workplace_id = "{workplace_id}" ' \
-                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and sw.is_checked = 0;'
+                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
 
         cursor.execute(query.format(workplace_id=workplace_id,
                                     year=__year,
@@ -219,5 +219,7 @@ class ChangeSubstitute(Resource):
                                         ))
             alba_db.commit()
             return {'result': 'Success'}
+
+
         else:
             return {'result': 'Fail', "error": "Wrong data"}
