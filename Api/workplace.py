@@ -31,6 +31,15 @@ model_workplace_fire = Workplace.model('Workspace Fire Model', {
     'employer_id': fields.String(description='Employer ID', required=True),
 })
 
+
+model_workplace_attendance = Workplace.model('Workplace Attendance Model', {
+    'token': fields.String(description='token', required=True),
+    'year': fields.Integer(description='Year', required=True),
+    'month': fields.Integer(description='Month', required=True),
+    'day': fields.Integer(description='Day', required=True),
+})
+
+
 @Workplace.route('/')
 class GetWorkSpace(Resource):
     @Workplace.response(200, 'OK')
@@ -310,6 +319,7 @@ class Fire(Resource):
         __employer_id = __args['employer_id']
 
 
+
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
         except:
@@ -348,4 +358,61 @@ class Fire(Resource):
         else:
             return {"error": "Auth Failed"}, 401
 
+
+@Workplace.route('/<workplace_id>/attendance')
+class Attendance(Resource):
+    @Workplace.expect(model_workplace_attendance)
+    @Workplace.response(200, 'OK')
+    @Workplace.response(400, 'Bad Request')
+    @Workplace.response(401, 'Unauthorized')
+    @Workplace.response(500, 'Internal Server Error')
+    def post(self, workplace_id):
+        __parser = reqparse.RequestParser()
+        __parser.add_argument('token', type=str)
+        __parser.add_argument('year', type=str)
+        __parser.add_argument('month', type=str)
+        __parser.add_argument('day', type=str)
+
+        __args = __parser.parse_args()
+        __token = __args['token']
+        __year = __args['year']
+        __month = __args['month']
+        __day = __args['day']
+
+        try:
+            __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+        except:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
+
+        if __auth['user_type'] == 'employer':
+            __employer_id = __auth['id']
+            print(__auth)
+
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+
+            cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+            query = 'UPDATE workplace_schedule ' \
+                    'SET is_checked = 1 ' \
+                    'WHERE employer_id="{employer_id}" AND workplace_id = {workplace_id} ' \
+                    'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
+
+            try:
+                cursor.execute(query.format(employer_id=__employer_id,
+                                                workplace_id=workplace_id,
+                                                year=__year,
+                                                month=__month,
+                                                day=__day
+                                                ))
+                alba_db.commit()
+
+                return {'result': 'Success'}
+            except:
+                return {'result': 'Fail', "error": "Auth Failed"}, 401
+
+        else:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
 

@@ -5,6 +5,7 @@ from Api.login import Login
 from Api.register import Register
 from Api.workplace import Workplace
 from Api.calendar import Calendar
+from Api.substitute import Substitute
 import os
 
 app = Flask(__name__)
@@ -21,10 +22,10 @@ api.add_namespace(Register, '/register')
 api.add_namespace(Login, '/login')
 # 매장
 api.add_namespace(Workplace, '/workplace')
-
 # 캘린더
 api.add_namespace(Calendar, '/calendar')
-
+# 캘린더
+api.add_namespace(Substitute, '/substitute')
 
 
 if __name__ == '__main__':
