@@ -38,12 +38,8 @@ class PostLogin(Resource):
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select pwd from {user_type} where id = "{user_id}"'
-
         cursor.execute(query.format(user_type=__userType, user_id=__userID))
-
         __result = cursor.fetchall()
-
-        print(__result)
 
         if __result:
             login_json = {'id': __userID,
@@ -51,11 +47,22 @@ class PostLogin(Resource):
                           'user_type': __userType
                           }
 
+
             token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
             if __result[0]['pwd'] == __userPW:
+
+                query = 'select ww.workplace_id ' \
+                        'from employer as e right outer join workplace_workers AS ww ON e.id = ww.employer_id ' \
+                        'where e.id = "{employer_id}";'
+
+                cursor.execute(query.format(employer_id=__userID))
+                __result = cursor.fetchall()
+                print(__result)
+
                 return {'result': 'Success',
-                        'token': token
+                        'token': token,
+                        'data': __result
                         }
 
             else:
