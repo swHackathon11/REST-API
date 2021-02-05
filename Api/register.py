@@ -27,6 +27,7 @@ class PostRegister(Resource):
     @Register.response(401, 'Unauthorized')
     @Register.response(500, 'Internal Server Error')
     def post(self):
+        """회원가입"""
         __parser = reqparse.RequestParser()
         __parser.add_argument('user_id', type=str)
         __parser.add_argument('user_password', type=str)
@@ -61,6 +62,7 @@ class PostRegister(Resource):
     @Register.response(401, 'Unauthorized')
     @Register.response(500, 'Internal Server Error')
     def post(self):
+        """ID 중복 체크"""
         __parser = reqparse.RequestParser()
         __parser.add_argument('user_id', type=str)
         __parser.add_argument('user_type', type=str)

@@ -45,6 +45,7 @@ class postCalendar(Resource):
     @Calendar.response(401, 'Unauthorized')
     @Calendar.response(500, 'Internal Server Error')
     def post(self, workplace_id):
+        '''스케줄 조회'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=int)
@@ -88,8 +89,7 @@ class postCalendar(Resource):
             cursor.execute(query.format(workplace_id=workplace_id,
                                         year=__year,
                                         month=__month,
-                                        day = __day))
-
+                                        day=__day))
 
         result = cursor.fetchall()
 
@@ -110,6 +110,7 @@ class postAddSchedule(Resource):
     @Calendar.response(401, 'Unauthorized')
     @Calendar.response(500, 'Internal Server Error')
     def post(self, workplace_id):
+        '''스케줄 추가'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=int)

@@ -34,7 +34,7 @@ class GetSubstitute(Resource):
     @Substitute.response(401, 'Unauthorized')
     @Substitute.response(500, 'Internal Server Error')
     def post(self, workplace_id):
-
+        '''대타 조회'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=str)
@@ -94,6 +94,7 @@ class AddSubstitute(Resource):
     @Substitute.response(401, 'Unauthorized')
     @Substitute.response(500, 'Internal Server Error')
     def post(self, workplace_id):
+        '''대타 등록'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('workplace_schedule_id', type=str)
@@ -142,6 +143,7 @@ class ChangeSubstitute(Resource):
     @Substitute.response(401, 'Unauthorized')
     @Substitute.response(500, 'Internal Server Error')
     def patch(self, workplace_id):
+        '''대타로 변경'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('workplace_schedule_id', type=str)

@@ -53,7 +53,7 @@ class GetWorkSpace(Resource):
     @Workplace.response(500, 'Internal Server Error')
     @Workplace.doc(params={'Auth': {'in': 'header', 'description': '인증 토큰', 'required': "true"}})
     def get(self):
-
+        '''매장 조회'''
         try:
             __auth = jwt.decode(request.headers.get('Auth'), JWT["key"], algorithms="HS256")
         except:
@@ -86,6 +86,7 @@ class PostRegister(Resource):
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def post(self):
+        '''매장 추가'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('name', type=str)
@@ -150,6 +151,7 @@ class PostRegister(Resource):
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def delete(self):
+        '''매장 삭제'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('workplace_id', type=int)
@@ -204,6 +206,7 @@ class WorkplaceWorker(Resource):
     @Workplace.response(500, 'Internal Server Error')
     @Workplace.doc(params={'Auth': {'in': 'header', 'description': '인증 토큰', 'required': "true"}})
     def get(self, workplace_id):
+        '''매장 직원 찾기'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __args = __parser.parse_args()
@@ -250,6 +253,7 @@ class Hire(Resource):
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def post(self, workplace_id):
+        '''매장 직원 추가'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('employer_id', type=str)
@@ -315,6 +319,7 @@ class Fire(Resource):
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def delete(self, workplace_id):
+        '''매장 직원 삭제'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('employer_id', type=str)
@@ -369,6 +374,7 @@ class Attendance(Resource):
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def patch(self, workplace_id):
+        '''출근'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=str)
@@ -420,13 +426,14 @@ class Attendance(Resource):
 
 
 @Workplace.route('/<workplace_id>/leave')
-class Attendance(Resource):
+class Leave(Resource):
     @Workplace.expect(model_workplace_leave)
     @Workplace.response(200, 'OK')
     @Workplace.response(400, 'Bad Request')
     @Workplace.response(401, 'Unauthorized')
     @Workplace.response(500, 'Internal Server Error')
     def patch(self, workplace_id):
+        '''퇴근'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=str)

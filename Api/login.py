@@ -20,6 +20,7 @@ class PostLogin(Resource):
     @Login.response(401, 'Unauthorized')
     @Login.response(500, 'Internal Server Error')
     def post(self):
+        '''로그인'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('user_id', type=str)
         __parser.add_argument('user_password', type=str)
