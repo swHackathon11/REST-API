@@ -1,3 +1,7 @@
+import datetime
+import json
+
+from flask import request
 from flask_restplus import Namespace, fields, Resource, reqparse
 import pymysql
 import jwt
@@ -14,26 +18,36 @@ model_substitute = Substitute.model('Substitute Data', {
 })
 
 
-@Substitute.route('/<workplace_schedule_id>')
-class PostSubstitute(Resource):
+model_add_substitute = Substitute.model('Substitute Add Data', {
+    'token': fields.String(description='Token', required=True),
+    'workplace_schedule_id': fields.String(description='Year', required=True),
+})
 
+@Substitute.route('/<workplace_id>')
+class GetSubstitute(Resource):
     @Substitute.expect(model_substitute)
     @Substitute.response(200, 'OK')
     @Substitute.response(400, 'Bad Request')
     @Substitute.response(401, 'Unauthorized')
     @Substitute.response(500, 'Internal Server Error')
-    def post(self, workplace_schedule_id):
+    def post(self, workplace_id):
+
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=str)
-        __parser.add_argument('month', type=str)
-        __parser.add_argument('day', type=str)
+        __parser.add_argument('month', type=int)
+        __parser.add_argument('day', type=int)
         __args = __parser.parse_args()
 
         __token = __args['token']
         __year = __args['year']
         __month = __args['month']
         __day = __args['day']
+
+        try:
+            __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+        except:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
 
         alba_db = pymysql.connect(user=DATABASES['user'],
                                   passwd=DATABASES['passwd'],
@@ -42,37 +56,76 @@ class PostSubstitute(Resource):
                                   charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-        query = 'select pwd from {user_type} where id = "{user_id}"'
-        cursor.execute(query.format(user_type=__userType, user_id=__userID))
+
+        query = 'select sw.id, sw.workplace_id, e.name, sw.employer_id, ws.date, ws.start_time, ws.end_time, sw.is_checked ' \
+                'from sub_wanted as sw ' \
+                'right outer join workplace_schedule as ws ' \
+                'ON sw.workplace_schedule_id = ws.id ' \
+                'right outer join employer as e ' \
+                'ON sw.employer_id = e.id ' \
+                'where sw.workplace_id = "{workplace_id}" ' \
+                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
+
+        cursor.execute(query.format(workplace_id=workplace_id,
+                                    year=__year,
+                                    month=__month,
+                                    day=__day))
+
         __result = cursor.fetchall()
 
-        if __result:
-            login_json = {'id': __userID,
-                          'pw': __userPW,
-                          'user_type': __userType
-                          }
+        def default(o):
+            if isinstance(o, (datetime.date, datetime.datetime, datetime.timedelta)):
+                return o.__str__()
+
+        __result = json.loads(json.dumps(__result, default=default))
+
+        return {'result': 'Success', 'data': __result}
 
 
-            token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
-            if __result[0]['pwd'] == __userPW:
+@Substitute.route('/<workplace_id>/add')
+class AddSubstitute(Resource):
 
-                query = 'select ww.workplace_id ' \
-                        'from employer as e right outer join workplace_workers AS ww ON e.id = ww.employer_id ' \
-                        'where e.id = "{employer_id}";'
+    @Substitute.expect(model_add_substitute)
+    @Substitute.response(200, 'OK')
+    @Substitute.response(400, 'Bad Request')
+    @Substitute.response(401, 'Unauthorized')
+    @Substitute.response(500, 'Internal Server Error')
+    def post(self, workplace_id):
+        __parser = reqparse.RequestParser()
+        __parser.add_argument('token', type=str)
+        __parser.add_argument('workplace_schedule_id', type=str)
 
-                cursor.execute(query.format(employer_id=__userID))
-                __result = cursor.fetchall()
-                print(__result)
+        __args = __parser.parse_args()
+        __token = __args['token']
+        __workplace_schedule_id = __args['workplace_schedule_id']
 
-                return {'result': 'Success',
-                        'token': token,
-                        'data': __result
-                        }
+        try:
+            __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+        except:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-            else:
-                return {'result': 'Fail',
-                        'error': 'PW mismatch'}
-        else:
-            return {'result': 'Fail',
-                    'error': 'ID does not exist'}
+        alba_db = pymysql.connect(user=DATABASES['user'],
+                                  passwd=DATABASES['passwd'],
+                                  host=DATABASES['db_host'],
+                                  db=DATABASES['db_name'],
+                                  charset=DATABASES["charset"])
+
+        cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+
+        max_id_query = 'select max(id) as max From sub_wanted;'
+        cursor.execute(max_id_query)
+        result = cursor.fetchall()
+        try:
+            __id = int(result[0]['max']) + 1
+        except:
+            __id = 1
+
+        query = 'insert into sub_wanted values({id},{workplace_id}, "{employer_id}",{workplace_schedule_id}, 0);'
+        cursor.execute(query.format(id=__id,
+                                    workplace_id=workplace_id,
+                                    employer_id=__auth['id'],
+                                    workplace_schedule_id=__workplace_schedule_id
+                                    ))
+        alba_db.commit()
+        return {'result': 'success'}
