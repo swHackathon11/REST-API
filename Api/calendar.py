@@ -20,11 +20,26 @@ model_add_schedule = Calendar.model('Calendar Data', {
     'month': fields.Integer(description='Month', required=True),
 })
 
+return_calendar_data_model = Calendar.model('Return Calendar Data',{
+    'id': fields.String(description='캘린더 ID', required=True),
+    'employer_id': fields.String(description='알바 아이디', required=True),
+    'name': fields.String(description='알바 이름', required=True),
+    'date': fields.String(description='날짜', required=True),
+    'start_time': fields.String(description='시작 시간', required=True),
+    'end_time': fields.String(description='종료 시간', required=True),
+    'is_checked': fields.Integer(description='출근 여부', required=True),
+})
+
+calendar_response_model = Calendar.model('Attendance Response Model', {
+    'result': fields.String(description='성공 여부'),
+    'data': fields.List(fields.Nested(return_calendar_data_model)),
+})
+
 
 @Calendar.route('/<workplace_id>')
 class postCalendar(Resource):
     @Calendar.expect(model_calendar)
-    @Calendar.response(200, 'OK')
+    @Calendar.response(200, 'OK', model=calendar_response_model)
     @Calendar.response(400, 'Bad Request')
     @Calendar.response(401, 'Unauthorized')
     @Calendar.response(500, 'Internal Server Error')
