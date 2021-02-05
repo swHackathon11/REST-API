@@ -73,7 +73,7 @@ class GetSubstitute(Resource):
                 'right outer join employee as e ' \
                 'ON sw.employee_id = e.id ' \
                 'where sw.workplace_id = "{workplace_id}" ' \
-                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and is_checked = 1;'
+                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and is_checked = 0;'
 
         cursor.execute(query.format(workplace_id=workplace_id,
                                     year=__year,
