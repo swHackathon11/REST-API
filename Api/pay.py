@@ -7,6 +7,7 @@ Pay = Namespace('pay', description='급여')
 
 model_pay = Pay.model('Pay Data', {
     'token': fields.String(description='로그인 토큰', required=True),
+    'workplace_id': fields.String(description='매장 아이디', required=True),
     'employee_id': fields.String(description='알바 아이디', required=True),
 })
 
@@ -21,18 +22,18 @@ class PostLogin(Resource):
     def post(self):
         '''급여 조회'''
         __parser = reqparse.RequestParser()
-        __parser.add_argument('user_id', type=str)
-        __parser.add_argument('user_password', type=str)
-        __parser.add_argument('user_type', type=str)
+        __parser.add_argument('token', type=str)
+        __parser.add_argument('workplace_id', type=str)
+        __parser.add_argument('employee_id', type=str)
         __args = __parser.parse_args()
 
-        __userID = __args['user_id']
-        __userPW = __args['user_password']
-        __userType = __args['user_type']
+        __token = __args['token']
+        __workplace_id = __args['workplace_id']
+        __employee_id = __args['employee_id']
 
-        if __userType != 'employee' and __userType != 'employer':
-            return {'result': 'Fail',
-                    'error': 'User Type is Incorrect'}
+        # 고용주 전용
+        if __token['user_type'] != 'employer':
+            return {'result': 'Fail', 'error': 'Only for employer'}
 
         alba_db = pymysql.connect(user=DATABASES['user'],
                                   passwd=DATABASES['passwd'],
@@ -41,47 +42,15 @@ class PostLogin(Resource):
                                   charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-        query = 'select pwd from {user_type} where id = "{user_id}"'
-        cursor.execute(query.format(user_type=__userType, user_id=__userID))
+        query = 'select * from workplace_schedule ' \
+                'where workplace_id = "{workplace_id}" and employee_id = "{employee_id}";'
+
+        cursor.execute(query.format(workplace_id=__workplace_id, employee_id=__employee_id))
         __result = cursor.fetchall()
 
-        if __result:
-            login_json = {'id': __userID,
-                          'pw': __userPW,
-                          'user_type': __userType
-                          }
+        print(__result)
 
-
-            token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
-
-            if __result[0]['pwd'] == __userPW:
-                if __userType == 'employer':
-                    query = 'select ww.workplace_id as id ' \
-                            'from employer as e right outer join workplace_workers AS ww ON e.id = ww.employer_id ' \
-                            'where e.id = "{employer_id}";'
-
-                    cursor.execute(query.format(employer_id=__userID))
-                    __result = cursor.fetchall()
-                    __data = [r["id"] for r in __result]
-
-
-                elif __userType == 'employee':
-                    query = 'select w.id from employee as e right outer join workplace AS w ON e.id = w.employee_id where e.id = "{employee_id}";'
-                    cursor.execute(query.format(employee_id=__userID))
-                    __result = cursor.fetchall()
-                    __data = [r["id"] for r in __result]
-                    print(__data)
-
-
-
-                return {'result': 'Success',
-                        'token': token,
-                        'workplace_id': __data
-                        }
-
-            else:
-                return {'result': 'Fail',
-                        'error': 'PW mismatch'}
-        else:
-            return {'result': 'Fail',
-                    'error': 'ID does not exist'}
+        return {
+            'result': 'Success',
+            'data': __result
+        }

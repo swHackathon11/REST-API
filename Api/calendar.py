@@ -82,17 +82,17 @@ class postCalendar(Resource):
 
 
         if __day is None:
-            query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
-                    'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
+            query = 'SELECT ws.id, ws.employee_id, employee.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
+                    'from workplace_schedule as ws right outer join employee ON ws.employee_id=employee.id ' \
                     'where workplace_id="{workplace_id}" and YEAR(date) = {year} and Month(date) = {month};'
 
             cursor.execute(query.format(workplace_id=workplace_id,
                                         year=__year,
                                         month=__month))
         else:
-            query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
-                    'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
-                    'where workplace_id="{workplace_id}" and YEAR(date) = {year} and Day(date) = {day};'
+            query = 'SELECT ws.id, ws.employee_id, employee.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
+                    'from workplace_schedule as ws right outer join employee ON ws.employee_id=employee.id ' \
+                    'where workplace_id="{workplace_id}" and YEAR(date) = {year} and Month(date) = {month} and Day(date) = {day};'
 
             cursor.execute(query.format(workplace_id=workplace_id,
                                         year=__year,

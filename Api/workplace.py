@@ -20,14 +20,14 @@ model_delete_workplace = Workplace.model('Workspace Delete Model', {
 
 model_workplace_hire = Workplace.model('Workplace Hire Model', {
     'token': fields.String(description='token', required=True),
-    'employer_id': fields.String(description='Employer ID', required=True),
-    'hourly': fields.String(description='Hourly Wage', required=True),
-    'tax_included': fields.Integer(description='Tax', required=True),
+    'employee_id': fields.String(description='고용할 종업원 ID', required=True),
+    'hourly': fields.String(description='시급', required=True),
+    'tax_included': fields.Integer(description='세금 포함 여부', required=True),
 })
 
 model_workplace_fire = Workplace.model('Workspace Fire Model', {
     'token': fields.String(description='token', required=True),
-    'employer_id': fields.String(description='Employer ID', required=True),
+    'employee_id': fields.String(description='해고할 종업원 ID', required=True),
 })
 
 model_workplace_attendance = Workplace.model('Workplace Attendance Model', {
@@ -56,9 +56,12 @@ class GetWorkSpace(Resource):
         '''매장 조회'''
         try:
             __auth = jwt.decode(request.headers.get('Auth'), JWT["key"], algorithms="HS256")
+            print(__auth)
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
-        if __auth['user_type'] == 'employee':
+
+
+        if __auth['user_type'] == 'employer':
             alba_db = pymysql.connect(user=DATABASES['user'],
                                       passwd=DATABASES['passwd'],
                                       host=DATABASES['db_host'],
@@ -66,16 +69,16 @@ class GetWorkSpace(Resource):
                                       charset=DATABASES["charset"])
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-            query = 'select * from workplace where employee_id="{employee_id}"'
+            query = 'select * from workplace where employer_id="{employer_id}"'
 
-            cursor.execute(query.format(employee_id=__auth['id']))
+            cursor.execute(query.format(employer_id=__auth['id']))
             result = cursor.fetchall()
 
             return {'result': 'Success',
                     'data': result}
-
         else:
-            return {"error": "Auth Failed"}, 401
+            return {"result": "Fail",
+                    "error": "Only for Employer"}, 401
 
 
 @Workplace.route('/add')
@@ -104,8 +107,8 @@ class PostRegister(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employee':
-            __employee_id = __auth['id']
+        if __auth['user_type'] == 'employer':
+            __employer_id = __auth['id']
             print(__auth)
 
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -124,11 +127,11 @@ class PostRegister(Resource):
                 __id = 1
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-            query = 'insert into workplace values ({id},"{name}","{employee_id}", {payday}, {capacity});'
+            query = 'insert into workplace values ({id},"{name}","{employer_id}", {payday}, {capacity});'
             try:
                 cursor.execute(query.format(id=__id,
                                             name=__name,
-                                            employee_id=__employee_id,
+                                            employer_id=__employer_id,
                                             payday=__payday,
                                             capacity=__capacity
                                             ))
@@ -140,7 +143,8 @@ class PostRegister(Resource):
                 return {'result': 'Fail'}
 
         else:
-            return {"error": "Auth Failed"}, 401
+            return {"result": "Fail",
+                    "error": "Only for Employer"}, 401
 
 
 @Workplace.route('/delete')
@@ -165,8 +169,8 @@ class PostRegister(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employee':
-            __employee_id = __auth['id']
+        if __auth['user_type'] == 'employer':
+            __employer_id = __auth['id']
 
             alba_db = pymysql.connect(user=DATABASES['user'],
                                       passwd=DATABASES['passwd'],
@@ -176,17 +180,17 @@ class PostRegister(Resource):
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
-            query = 'select * from workplace where employee_id = "{employee_id}" and id={id};'
+            query = 'select * from workplace where employee_id = "{employer_id}" and id={id};'
 
-            cursor.execute(query.format(employee_id=__employee_id, id=__workplace_id))
+            cursor.execute(query.format(employee_id=__employer_id, id=__workplace_id))
             result = cursor.fetchall()
             print(result)
 
             if result:
                 try:
-                    query = 'delete from workplace where employee_id = "{employee_id}" and id={id};'
+                    query = 'delete from workplace where employee_id = "{employer_id}" and id={id};'
 
-                    cursor.execute(query.format(employee_id=__employee_id, id=__workplace_id))
+                    cursor.execute(query.format(employee_id=__employer_id, id=__workplace_id))
                     alba_db.commit()
                     return {'result': 'Success'}
                 except Exception as e:
@@ -195,7 +199,8 @@ class PostRegister(Resource):
                 return {'result': 'Fail (지울 데이터가 없음)'}
 
         else:
-            return {"error": "Auth Failed"}, 401
+            return {"result": "Fail",
+                    "error": "Only for Employer"}, 401
 
 
 @Workplace.route('/<workplace_id>')
@@ -207,30 +212,25 @@ class WorkplaceWorker(Resource):
     @Workplace.doc(params={'Auth': {'in': 'header', 'description': '인증 토큰', 'required': "true"}})
     def get(self, workplace_id):
         '''매장 직원 찾기'''
-        __parser = reqparse.RequestParser()
-        __parser.add_argument('token', type=str)
-        __args = __parser.parse_args()
-        __token = __args['token']
-
         try:
             __auth = jwt.decode(request.headers.get('Auth'), JWT["key"], algorithms="HS256")
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employee':
+        if __auth['user_type'] == 'employer':
             alba_db = pymysql.connect(user=DATABASES['user'],
                                       passwd=DATABASES['passwd'],
                                       host=DATABASES['db_host'],
                                       db=DATABASES['db_name'],
                                       charset=DATABASES["charset"])
-            query = 'select * from workplace where employee_id = "{employee_id}" and id={id};'
+            query = 'select * from workplace where employer_id = "{employer_id}" and id={id};'
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-            cursor.execute(query.format(employee_id=__auth["id"], id=workplace_id))
+            cursor.execute(query.format(employer_id=__auth["id"], id=workplace_id))
             result = cursor.fetchall()
 
             if result:
-                query = 'select ww.id, ww.employer_id, e.name, ww.hourly, ww.tax_included, ww.workplace_id ' \
-                        'from workplace_workers as ww right outer join employer as e ON ww.employer_id=e.id ' \
+                query = 'select ww.id, ww.employee_id, e.name, ww.hourly, ww.tax_included, ww.workplace_id ' \
+                        'from workplace_workers as ww right outer join employee as e ON ww.employee_id=e.id ' \
                         'where workplace_id = {workplace_id}'
 
                 print(query.format(workplace_id=workplace_id))
@@ -242,7 +242,8 @@ class WorkplaceWorker(Resource):
             else:
                 return {'result': 'Fail', "error": "Auth Failed"}, 401
         else:
-            return {'result': 'Fail', "error": "Auth Failed"}, 401
+            return {"result": "Fail",
+                    "error": "Only for Employer"}, 401
 
 
 @Workplace.route('/<workplace_id>/hire')
@@ -256,13 +257,13 @@ class Hire(Resource):
         '''매장 직원 추가'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
-        __parser.add_argument('employer_id', type=str)
+        __parser.add_argument('employee_id', type=str)
         __parser.add_argument('hourly', type=int)
         __parser.add_argument('tax_included', type=int)
         __args = __parser.parse_args()
 
         __token = __args['token']
-        __employer_id = __args['employer_id']
+        __employee_id = __args['employer_id']
         __hourly = __args['hourly']
         __tax_included = __args['tax_included']
 
@@ -271,8 +272,8 @@ class Hire(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employee':
-            __employee_id = __auth['id']
+        if __auth['user_type'] == 'employer':
+            __employer_id = __auth['id']
             print(__auth)
 
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -292,11 +293,11 @@ class Hire(Resource):
                 __id = 1
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
-            query = 'insert into workplace_workers values ({id},"{employer_id}","{hourly}", {tax_indcluded}, {workplace_id});'
+            query = 'insert into workplace_workers values ({id},"{employee_id}","{hourly}", {tax_indcluded}, {workplace_id});'
 
             try:
                 cursor.execute(query.format(id=__id,
-                                            employer_id=__employer_id,
+                                            employee_id=__employee_id,
                                             hourly=__hourly,
                                             tax_indcluded=__tax_included,
                                             workplace_id=workplace_id
@@ -326,15 +327,15 @@ class Fire(Resource):
         __args = __parser.parse_args()
 
         __token = __args['token']
-        __employer_id = __args['employer_id']
+        __employee_id = __args['employee_id']
 
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employee':
-            __employee_id = __auth['id']
+        if __auth['user_type'] == 'employer':
+            __employer_id = __auth['id']
             print(__auth)
 
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -345,16 +346,16 @@ class Fire(Resource):
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
-            query = 'select * from workplace_workers where employer_id = "{employer_id}" and workplace_id={workplace_id};'
+            query = 'select * from workplace_workers where employee_id = "{employee_id}" and workplace_id={workplace_id};'
 
-            cursor.execute(query.format(employer_id=__employer_id, workplace_id=workplace_id))
+            cursor.execute(query.format(employer_id=__employee_id, workplace_id=workplace_id))
             result = cursor.fetchall()
             print(result)
 
             if result:
                 try:
-                    query = 'delete from workplace_workers where employer_id = "{employer_id}" and workplace_id={workplace_id};'
-                    cursor.execute(query.format(employer_id=__employer_id, workplace_id=workplace_id))
+                    query = 'delete from workplace_workers where employee_id = "{employee_id}" and workplace_id={workplace_id};'
+                    cursor.execute(query.format(employer_id=__employee_id, workplace_id=workplace_id))
                     alba_db.commit()
                     return {'result': 'Success'}
                 except Exception as e:
@@ -392,8 +393,8 @@ class Attendance(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employer':
-            __employer_id = __auth['id']
+        if __auth['user_type'] == 'employee':
+            __employee_id = __auth['id']
             print(__auth)
 
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -405,11 +406,11 @@ class Attendance(Resource):
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             query = 'UPDATE workplace_schedule ' \
                     'SET is_checked = 1 ' \
-                    'WHERE employer_id="{employer_id}" AND workplace_id = {workplace_id} ' \
+                    'WHERE employee_id="{employee_id}" AND workplace_id = {workplace_id} ' \
                     'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
 
             try:
-                cursor.execute(query.format(employer_id=__employer_id,
+                cursor.execute(query.format(employee_id=__employee_id,
                                             workplace_id=workplace_id,
                                             year=__year,
                                             month=__month,
@@ -451,8 +452,8 @@ class Leave(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        if __auth['user_type'] == 'employer':
-            __employer_id = __auth['id']
+        if __auth['user_type'] == 'employee':
+            __employee_id = __auth['id']
             print(__auth)
 
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -464,11 +465,11 @@ class Leave(Resource):
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             query = 'UPDATE workplace_schedule ' \
                     'SET is_checked = 2 ' \
-                    'WHERE employer_id="{employer_id}" AND workplace_id = {workplace_id} ' \
+                    'WHERE employee_id="{employee_id}" AND workplace_id = {workplace_id} ' \
                     'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
 
             try:
-                cursor.execute(query.format(employer_id=__employer_id,
+                cursor.execute(query.format(employee_id=__employee_id,
                                             workplace_id=workplace_id,
                                             year=__year,
                                             month=__month,
