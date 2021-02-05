@@ -1,3 +1,6 @@
+import datetime
+import json
+
 from flask_restplus import Namespace, fields, Resource, reqparse
 import pymysql
 import jwt
@@ -31,8 +34,13 @@ class PostLogin(Resource):
         __workplace_id = __args['workplace_id']
         __employee_id = __args['employee_id']
 
-        # 고용주 전용
-        if __token['user_type'] != 'employer':
+        try:
+            __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+        except:
+            return {'result': 'Fail', "error": "Auth Failed"}, 401
+
+        # 고용주 전용ㄴ
+        if __auth['user_type'] != 'employer':
             return {'result': 'Fail', 'error': 'Only for employer'}
 
         alba_db = pymysql.connect(user=DATABASES['user'],
@@ -43,11 +51,16 @@ class PostLogin(Resource):
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select * from workplace_schedule ' \
-                'where workplace_id = "{workplace_id}" and employee_id = "{employee_id}";'
+                'where workplace_id = "{workplace_id}" and employee_id = "{employee_id}" and is_checked = 2;'
 
         cursor.execute(query.format(workplace_id=__workplace_id, employee_id=__employee_id))
         __result = cursor.fetchall()
 
+        def default(o):
+            if isinstance(o, (datetime.date, datetime.datetime, datetime.timedelta)):
+                return o.__str__()
+
+        __result = json.loads(json.dumps(__result, default=default))
         print(__result)
 
         return {
