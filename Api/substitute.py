@@ -16,15 +16,18 @@ model_substitute = Substitute.model('Substitute Data', {
     'day': fields.Integer(description='Day', required=False),
 })
 
+# 대타 추가
 model_add_substitute = Substitute.model('Substitute Add Data', {
     'token': fields.String(description='Token', required=True),
     'workplace_schedule_id': fields.String(description='Year', required=True),
 })
 
+# 대타로 변경
 model_change_substitute = Substitute.model('Substitute Change Data', {
     'token': fields.String(description='Token', required=True),
-    'workplace_schedule_id': fields.String(description='Year', required=True),
+    'sub_wanted_id': fields.String(description='Year', required=True),
 })
+
 
 @Substitute.route('/<workplace_id>')
 class GetSubstitute(Resource):
@@ -70,7 +73,7 @@ class GetSubstitute(Resource):
                 'right outer join employee as e ' \
                 'ON sw.employee_id = e.id ' \
                 'where sw.workplace_id = "{workplace_id}" ' \
-                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day};'
+                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and is_checked = 1;'
 
         cursor.execute(query.format(workplace_id=workplace_id,
                                     year=__year,
@@ -152,16 +155,23 @@ class ChangeSubstitute(Resource):
         '''대타로 변경'''
         __parser = reqparse.RequestParser()
         __parser.add_argument('token', type=str)
-        __parser.add_argument('workplace_schedule_id', type=str)
+        __parser.add_argument('sub_wanted_id', type=str)
 
         __args = __parser.parse_args()
         __token = __args['token']
-        __workplace_schedule_id = __args['workplace_schedule_id']
+        __sub_wanted_id = __args['sub_wanted_id']
 
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
+            print(__auth)
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
+
+        # 고용주 이용 불가
+        if __auth['user_type'] == 'employer':
+            return {'result': 'Fail', "error": "Only for emloyee"}, 401
+
+        __change_employee_id = __auth['id']
 
         try:
             alba_db = pymysql.connect(user=DATABASES['user'],
@@ -174,19 +184,32 @@ class ChangeSubstitute(Resource):
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
-        max_id_query = 'select max(id) as max From sub_wanted;'
-        cursor.execute(max_id_query)
+        query = 'select * From sub_wanted where id = {id};'
+        cursor.execute(query.format(id=__sub_wanted_id))
         result = cursor.fetchall()
-        try:
-            __id = int(result[0]['max']) + 1
-        except:
-            __id = 1
 
-        query = 'insert into sub_wanted values({id},{workplace_id}, "{employee_id}",{workplace_schedule_id}, 0);'
-        cursor.execute(query.format(id=__id,
-                                    workplace_id=workplace_id,
-                                    employee_id=__auth['id'],
-                                    workplace_schedule_id=__workplace_schedule_id
-                                    ))
-        alba_db.commit()
-        return {'result': 'success'}
+        # 조회한 값이 존재하면
+        if result:
+            __employee_id = result[0]['employee_id']
+            __workplace_schedule_id = result[0]['workplace_schedule_id']
+            print(__employee_id)
+
+            query = 'UPDATE sub_wanted SET is_checked = 1 where id = {id}'
+            cursor.execute(query.format(id=__sub_wanted_id))
+            alba_db.commit()
+
+            query = 'UPDATE workplace_schedule ' \
+                    'SET employee_id = "{change_employee_id}"' \
+                    'WHERE employee_id="{employee_id}" AND workplace_id = "{workplace_id}" AND id = "{id}";'
+            print(query.format(change_employee_id=__change_employee_id,
+                                        employee_id=__employee_id,
+                                        workplace_id=workplace_id,
+                                        id=__workplace_schedule_id
+                                        ))
+            cursor.execute(query.format(change_employee_id=__change_employee_id,
+                                        employee_id=__employee_id,
+                                        workplace_id=workplace_id,
+                                        id=__workplace_schedule_id
+                                        ))
+            alba_db.commit()
+            return {'result': 'Success'}

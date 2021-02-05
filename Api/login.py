@@ -41,14 +41,19 @@ class PostLogin(Resource):
                                       host=DATABASES['db_host'],
                                       db=DATABASES['db_name'],
                                       charset=DATABASES["charset"])
-        except:
-            return {'result': 'Fail', "error": "DB Connection Error"}, 500
+        except Exception as e:
+            print(str(e))
+            if '1266' in str(e):
+
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
+            else:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select pwd from {user_type} where id = "{user_id}"'
         cursor.execute(query.format(user_type=__userType, user_id=__userID))
         __result = cursor.fetchall()
-
+        # 아이디 존재할 시
         if __result:
             login_json = {'id': __userID,
                           'pw': __userPW,
@@ -58,9 +63,12 @@ class PostLogin(Resource):
 
             token = jwt.encode(login_json, JWT["key"], algorithm="HS256")
 
+            # 비밀번호 일치
             if __result[0]['pwd'] == __userPW:
+                __data = []
                 # 고용주
                 if __userType == 'employer':
+                    # 운영 매장 반환
                     query = 'select w.id from employer as e right outer join workplace AS w ON e.id = w.employer_id ' \
                             'where e.id = "{employer_id}";'
 
@@ -70,6 +78,7 @@ class PostLogin(Resource):
 
                 # 종업원
                 elif __userType == 'employee':
+                    # 일하고 있는 매장 반환
                     query = 'select ww.workplace_id as id ' \
                             'from employee as e right outer join workplace_workers AS ww ON e.id = ww.employee_id ' \
                             'where e.id = "{employee_id}";'
@@ -78,16 +87,17 @@ class PostLogin(Resource):
                     __data = [r["id"] for r in __result]
                     print(__data)
 
-
-
                 return {'result': 'Success',
                         'token': token,
                         'workplace_id': __data
                         }
 
+            # 비밀번호 불일치
             else:
                 return {'result': 'Fail',
                         'error': 'PW mismatch'}
+
+        # 아이디 존재하지 않을 시
         else:
             return {'result': 'Fail',
                     'error': 'ID does not exist'}
