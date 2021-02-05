@@ -62,11 +62,14 @@ class GetWorkSpace(Resource):
 
 
         if __auth['user_type'] == 'employer':
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             query = 'select * from workplace where employer_id="{employer_id}"'
@@ -111,12 +114,14 @@ class PostRegister(Resource):
             __employer_id = __auth['id']
             print(__auth)
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
-
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             max_id_query = 'select max(id) as max From workplace;'
             cursor.execute(max_id_query)
@@ -172,11 +177,14 @@ class PostRegister(Resource):
         if __auth['user_type'] == 'employer':
             __employer_id = __auth['id']
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
@@ -218,11 +226,15 @@ class WorkplaceWorker(Resource):
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
         if __auth['user_type'] == 'employer':
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
+
             query = 'select * from workplace where employer_id = "{employer_id}" and id={id};'
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             cursor.execute(query.format(employer_id=__auth["id"], id=workplace_id))
@@ -276,11 +288,14 @@ class Hire(Resource):
             __employer_id = __auth['id']
             print(__auth)
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
@@ -338,11 +353,14 @@ class Fire(Resource):
             __employer_id = __auth['id']
             print(__auth)
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
@@ -397,11 +415,14 @@ class Attendance(Resource):
             __employee_id = __auth['id']
             print(__auth)
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             query = 'UPDATE workplace_schedule ' \
@@ -456,11 +477,14 @@ class Leave(Resource):
             __employee_id = __auth['id']
             print(__auth)
 
-            alba_db = pymysql.connect(user=DATABASES['user'],
-                                      passwd=DATABASES['passwd'],
-                                      host=DATABASES['db_host'],
-                                      db=DATABASES['db_name'],
-                                      charset=DATABASES["charset"])
+            try:
+                alba_db = pymysql.connect(user=DATABASES['user'],
+                                          passwd=DATABASES['passwd'],
+                                          host=DATABASES['db_host'],
+                                          db=DATABASES['db_name'],
+                                          charset=DATABASES["charset"])
+            except:
+                return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
             cursor = alba_db.cursor(pymysql.cursors.DictCursor)
             query = 'UPDATE workplace_schedule ' \

@@ -40,11 +40,14 @@ class PostRegister(Resource):
         __userName = __args['user_name']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         sql = 'insert into ' + __userType + ' values ("' + __userID + '", "' + __userPW + '", "' + __userName + '");'
@@ -71,11 +74,14 @@ class PostRegister(Resource):
         __userID = __args['user_id']
         __userType = __args['user_type']
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 

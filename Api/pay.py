@@ -46,17 +46,20 @@ class PostLogin(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select * from workplace_schedule ' \
                 'where workplace_id = "{workplace_id}" and employee_id = "{employee_id}" ' \
                 'and Year(date) = {year} and Month(date) = {month} and is_checked = 2;'
+
 
         cursor.execute(query.format(workplace_id=__workplace_id,
                                     employee_id=__employee_id,
@@ -70,8 +73,6 @@ class PostLogin(Resource):
                 return o.__str__()
 
         __result = json.loads(json.dumps(__result, default=default))
-        print(__result)
-
         return {
             'result': 'Success',
             'data': __result

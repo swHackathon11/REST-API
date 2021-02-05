@@ -35,11 +35,14 @@ class PostLogin(Resource):
             return {'result': 'Fail',
                     'error': 'User Type is Incorrect'}
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
         query = 'select pwd from {user_type} where id = "{user_id}"'

@@ -52,11 +52,14 @@ class GetSubstitute(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
@@ -108,11 +111,14 @@ class AddSubstitute(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
@@ -157,11 +163,14 @@ class ChangeSubstitute(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        alba_db = pymysql.connect(user=DATABASES['user'],
-                                  passwd=DATABASES['passwd'],
-                                  host=DATABASES['db_host'],
-                                  db=DATABASES['db_name'],
-                                  charset=DATABASES["charset"])
+        try:
+            alba_db = pymysql.connect(user=DATABASES['user'],
+                                      passwd=DATABASES['passwd'],
+                                      host=DATABASES['db_host'],
+                                      db=DATABASES['db_name'],
+                                      charset=DATABASES["charset"])
+        except:
+            return {'result': 'Fail', "error": "DB Connection Error"}, 500
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
 
