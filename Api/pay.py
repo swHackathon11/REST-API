@@ -39,9 +39,6 @@ class PostLogin(Resource):
         except:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
 
-        # 고용주 전용ㄴ
-        if __auth['user_type'] != 'employer':
-            return {'result': 'Fail', 'error': 'Only for employer'}
 
         alba_db = pymysql.connect(user=DATABASES['user'],
                                   passwd=DATABASES['passwd'],
