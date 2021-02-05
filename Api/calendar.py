@@ -18,6 +18,7 @@ model_add_schedule = Calendar.model('Calendar Data', {
     'token': fields.String(description='Token', required=True),
     'year': fields.Integer(description='Year', required=True),
     'month': fields.Integer(description='Month', required=True),
+    'day': fields.Integer(description='Day', required=False),
 })
 
 return_calendar_data_model = Calendar.model('Return Calendar Data',{
@@ -48,12 +49,15 @@ class postCalendar(Resource):
         __parser.add_argument('token', type=str)
         __parser.add_argument('year', type=int)
         __parser.add_argument('month', type=int)
+        __parser.add_argument('day', type=int)
         __args = __parser.parse_args()
 
         __token = __args['token']
         __year = __args['year']
         __month = __args['month']
+        __day = __args['day']
 
+        print(__day)
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
             print(__auth)
@@ -68,14 +72,25 @@ class postCalendar(Resource):
                                   charset=DATABASES["charset"])
 
         cursor = alba_db.cursor(pymysql.cursors.DictCursor)
+        if __day is None:
+            query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
+                    'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
+                    'where workplace_id="1" and YEAR(date) = {year} and Month(date) = {month};'
 
-        query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
-                'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
-                'where workplace_id="1" and YEAR(date) = {year} and Month(date) = {month};'
+            cursor.execute(query.format(workplace_id=workplace_id,
+                                        year=__year,
+                                        month=__month))
+        else:
+            query = 'SELECT ws.id, ws.employer_id, employer.name, ws.date, ws.start_time, ws.end_time, ws.is_checked ' \
+                    'from workplace_schedule as ws right outer join employer ON ws.employer_id=employer.id ' \
+                    'where workplace_id="1" and YEAR(date) = {year} and Day(date) = {day};'
 
-        cursor.execute(query.format(workplace_id=workplace_id,
-                                    year=__year,
-                                    month=__month))
+            cursor.execute(query.format(workplace_id=workplace_id,
+                                        year=__year,
+                                        month=__month,
+                                        day = __day))
+
+
         result = cursor.fetchall()
 
         def default(o):

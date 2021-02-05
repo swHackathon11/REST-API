@@ -1,5 +1,4 @@
 import json
-
 import pymysql
 from flask_restplus import Namespace, fields, Resource, reqparse
 from settings import DATABASES
