@@ -73,7 +73,7 @@ class GetSubstitute(Resource):
                 'right outer join employee as e ' \
                 'ON sw.employee_id = e.id ' \
                 'where sw.workplace_id = "{workplace_id}" ' \
-                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and ws.is_checked = 0;'
+                'AND YEAR(date) = {year} AND Month(date) = {month} AND DAY(date) = {day} and sw.is_checked = 0;'
 
         cursor.execute(query.format(workplace_id=workplace_id,
                                     year=__year,
@@ -109,9 +109,6 @@ class AddSubstitute(Resource):
         __token = __args['token']
         __workplace_schedule_id = __args['workplace_schedule_id']
 
-
-
-
         try:
             __auth = jwt.decode(__token, JWT["key"], algorithms="HS256")
         except:
@@ -133,7 +130,6 @@ class AddSubstitute(Resource):
         result = cursor.fetchall()
         if result[0]['employee_id'] != __auth['id']:
             return {'result': 'Fail', "error": "Auth Failed"}, 401
-
 
         max_id_query = 'select max(id) as max From sub_wanted;'
         cursor.execute(max_id_query)
@@ -212,10 +208,10 @@ class ChangeSubstitute(Resource):
                     'SET employee_id = "{change_employee_id}"' \
                     'WHERE employee_id="{employee_id}" AND workplace_id = "{workplace_id}" AND id = "{id}";'
             print(query.format(change_employee_id=__change_employee_id,
-                                        employee_id=__employee_id,
-                                        workplace_id=workplace_id,
-                                        id=__workplace_schedule_id
-                                        ))
+                               employee_id=__employee_id,
+                               workplace_id=workplace_id,
+                               id=__workplace_schedule_id
+                               ))
             cursor.execute(query.format(change_employee_id=__change_employee_id,
                                         employee_id=__employee_id,
                                         workplace_id=workplace_id,
